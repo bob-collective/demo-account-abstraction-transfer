@@ -6,6 +6,7 @@ import { CurrencyTicker, Erc20Currencies, Erc20CurrencyTicker, currencies } from
 import { REFETCH_INTERVAL } from '../constants/query';
 import { ERC20Abi } from '../contracts/abi/ERC20.abi';
 import { Amount } from '../utils/amount';
+import { useAccountAbstraction } from '../aa/context';
 
 type Balances = {
   [ticker in Erc20CurrencyTicker]: bigint;
@@ -13,19 +14,20 @@ type Balances = {
 
 const useBalances = () => {
   const publicClient = usePublicClient();
-  const { address } = useAccount();
+  const { client } = useAccountAbstraction();
+  // const { address } = useAccount();
 
   // TODO: add transfer event listener and update balance on transfer in/out
   const { data, ...queryResult } = useQuery({
-    queryKey: ['balances', address],
-    enabled: !!address && !!publicClient,
+    queryKey: ['balances', client?.smartAccountAddress],
+    enabled: !!client?.smartAccountAddress && !!publicClient,
     queryFn: async () => {
       const balancesMulticallResult = await publicClient.multicall({
         contracts: Object.values(Erc20Currencies).map(({ address: erc20Address }) => ({
           abi: ERC20Abi,
           address: erc20Address,
           functionName: 'balanceOf',
-          args: [address]
+          args: [client?.smartAccountAddress]
         }))
       });
 

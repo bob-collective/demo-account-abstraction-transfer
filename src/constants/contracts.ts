@@ -7,9 +7,9 @@ import { Erc20Currencies, Erc20CurrencyTicker } from './currencies';
 //       here without need to re-define currencies again.
 enum ContractType {
   WBTC = 'WBTC',
-  USDT = 'USDT',
-  ERC20_MARKETPLACE = 'ERC20_MARKETPLACE',
-  BTC_MARKETPLACE = 'BTC_MARKETPLACE',
+  // USDT = 'USDT',
+  // ERC20_MARKETPLACE = 'ERC20_MARKETPLACE',
+  // BTC_MARKETPLACE = 'BTC_MARKETPLACE',
   FAUCET = 'FAUCET'
 }
 

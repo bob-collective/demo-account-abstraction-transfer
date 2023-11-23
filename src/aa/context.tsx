@@ -4,8 +4,9 @@ import { providers } from 'ethers';
 import { wrapProvider } from './utils';
 import { HexString } from '../types';
 import { Web3Provider } from '@ethersproject/providers';
+import { PromiseOrValue } from './accountFactory';
 
-const ENTRY_POINT_ADDRESS = '0x8B2e6AA2451a49d2cb124f69896Bc927333c7f33';
+const ENTRY_POINT_ADDRESS = '0x7A660708DB3D56BB0dC3694344777c805716Fca7'; // '0x8B2e6AA2451a49d2cb124f69896Bc927333c7f33';
 
 type accountAbstractionContextValue = {
   client?: AaClient;
@@ -29,10 +30,54 @@ const useAccountAbstraction = () => {
 
 interface AaClientConstructorOpts {
   bundlerUrl?: string;
+  paymasterAddress?: HexString;
+  onInitCallback?: (client: AaClient) => void;
 }
+export type Bytes = ArrayLike<number>;
 
+export type BytesLike = Bytes | string;
+
+export type BigNumberish = Bytes | bigint | string | number;
+
+export type UserOperationStruct = {
+  sender: PromiseOrValue<string>;
+  nonce: PromiseOrValue<BigNumberish>;
+  initCode: PromiseOrValue<BytesLike>;
+  callData: PromiseOrValue<BytesLike>;
+  callGasLimit: PromiseOrValue<BigNumberish>;
+  verificationGasLimit: PromiseOrValue<BigNumberish>;
+  preVerificationGas: PromiseOrValue<BigNumberish>;
+  maxFeePerGas: PromiseOrValue<BigNumberish>;
+  maxPriorityFeePerGas: PromiseOrValue<BigNumberish>;
+  paymasterAndData: PromiseOrValue<BytesLike>;
+  signature: PromiseOrValue<BytesLike>;
+};
+
+/**
+ * an API to external a UserOperation with paymaster info
+ */
+class WBTCPaymasterAPI {
+  /**
+   * @param userOp a partially-filled UserOperation (without signature and paymasterAndData
+   *  note that the "preVerificationGas" is incomplete: it can't account for the
+   *  paymasterAndData value, which will only be returned by this method..
+   * @returns the value to put into the PaymasterAndData, undefined to leave it empty
+   */
+  public paymasterAddress: HexString;
+
+  constructor(address: HexString) {
+    this.paymasterAddress = address;
+  }
+
+  async getPaymasterAndData(): Promise<string | undefined> {
+    // TODO: Add custom fee limit passed into class constructor.
+    const unlimitedPaymasterAndData = `${this.paymasterAddress}ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff`;
+    return unlimitedPaymasterAndData;
+  }
+}
 class AaClient {
   public isInitialized = false;
+  public paymasterAddress: HexString | undefined;
   public accountApi: BaseAccountAPI | null = null;
   public smartAccountAddress: HexString | null = null;
   public rpcClient: HttpRpcClient | null = null;
@@ -45,6 +90,7 @@ class AaClient {
       throw new Error('Injected wallet not found.');
     }
     this._injectedProvider = new providers.Web3Provider(window.ethereum);
+    this.paymasterAddress = opts.paymasterAddress;
 
     this._initialize(opts);
   }
@@ -57,18 +103,19 @@ class AaClient {
     const config = {
       chainId: await this._injectedProvider.getNetwork().then((network) => network.chainId),
       entryPointAddress: ENTRY_POINT_ADDRESS,
-      bundlerUrl: opts.bundlerUrl || 'http://localhost:3000/rpc'
+      bundlerUrl: opts.bundlerUrl || 'https://bundler-fluffy-bob.gobob.xyz/rpc',
+      paymasterAPI: opts.paymasterAddress && new WBTCPaymasterAPI(opts.paymasterAddress) // TODO: make optional and allow other paymasters.
     };
-
     this._signer = this._injectedProvider.getSigner();
 
     const wrappedProvider = await wrapProvider(this._injectedProvider, config, this._signer);
-
+    this.accountApi?.paymasterAPI;
     this.smartAccountAddress = (await wrappedProvider.smartAccountAPI.getAccountAddress()) as HexString;
     this.accountApi = wrappedProvider.smartAccountAPI;
     this.rpcClient = wrappedProvider.httpRpcClient;
 
     this.isInitialized = true;
+    opts.onInitCallback?.(this);
   }
 
   private _checkInitialized() {
@@ -77,74 +124,64 @@ class AaClient {
     }
   }
 
-  protected async _preUserOp() {
+  public async createUserOp({
+    address,
+    value,
+    callData
+  }: {
+    address: HexString;
+    value: string | number | undefined;
+    callData: HexString;
+  }) {
     this._checkInitialized();
-    // TODO: check if the account has funded entrypoint yet.
-    // If not, then:
-    // Fund the account.
-    const hexStrippedSmartAccount = this.smartAccountAddress!.slice(2);
-    await this._signer!.sendTransaction({
-      to: ENTRY_POINT_ADDRESS,
-      value: 1000000000000000,
-      data: `0xb760faf9000000000000000000000000${hexStrippedSmartAccount}`,
-      gasLimit: 100000
-    }).then(async (tx) => await tx.wait());
+
+    const op = await this.accountApi!.createUnsignedUserOp({
+      target: address,
+      value: value,
+      data: callData,
+      // TODO: Set gas limits dynamically.
+      maxFeePerGas: 0x6507a5d0,
+      maxPriorityFeePerGas: 0x6507a5c0
+    });
+
+    console.log(op);
+    return op as UserOperationStruct;
   }
 
-  public async sendUserOp() {
-    await this._preUserOp();
-    // TODO: should this accept already created userOp only?
+  protected async _preSendUserOp() {
+    this._checkInitialized();
+    // TODO: check if the account has funded the entrypoint yet.
+    // If not, then:
+    // Fund the account.
+
+    // const hexStrippedSmartAccount = this.smartAccountAddress!.slice(2);
+    // await this._signer!.sendTransaction({
+    //   to: ENTRY_POINT_ADDRESS,
+    //   value: 1000000000000000,
+    //   data: `0xb760faf9000000000000000000000000${hexStrippedSmartAccount}`,
+    //   gasLimit: 100000
+    // }).then(async (tx) => await tx.wait());
+  }
+
+  public async sendUserOp(userOp: UserOperationStruct) {
+    await this._preSendUserOp();
+
+    const signedUserOp = await this.accountApi!.signUserOp(userOp);
+
+    return await this.rpcClient?.sendUserOpToBundler(signedUserOp);
   }
 }
 
 const AccountAbstractionProvider = ({ children }: { children: JSX.Element }) => {
-  // const [accountAPI, setAccountAPI] = useState<BaseAccountAPI>();
-  // const [bundlerClient, setBundlerClient] = useState<HttpRpcClient>();
-  // const [address, setAddress] = useState<`0x${string}`>();
   const [client, setClient] = useState<AaClient>();
 
   useEffect(() => {
-    const aaClient = new AaClient();
-    setClient(aaClient);
+    new AaClient({
+      paymasterAddress: '0xD8Ae58534d5488571E248DdC0A3aD42aD5dBaD26',
+      bundlerUrl: 'http://localhost:3000/rpc',
+      onInitCallback: (client) => setClient(client)
+    });
   }, []);
-
-  // const { address: ownerAddress } = useAccount({
-  //   onConnect: async ({ address, connector }) => {
-  //     // if (!address || !connector || !window.ethereum) return;
-  //     const aaClient = new AaClient();
-  //     setClient(aaClient);
-  //     // const signerProvider = new providers.Web3Provider(window.ethereum);
-
-  //     // const config = {
-  //     //   chainId: await signerProvider.getNetwork().then((net) => net.chainId),
-  //     //   entryPointAddress: ENTRY_POINT_ADDRESS,
-  //     //   bundlerUrl: 'http://localhost:3000/rpc'
-  //     // };
-
-  //     // const owner = signerProvider.getSigner();
-
-  //     // const wrappedProvider = await wrapProvider(signerProvider, config, owner);
-
-  //     // const smartAccountAddress = await wrappedProvider.smartAccountAPI.getAccountAddress();
-
-  //     // // TODO: check if the account has funded entrypoint yet.
-  //     // // If not, then:
-  //     // // Fund the account.
-  //     // await signerProvider
-  //     //   .getSigner()
-  //     //   .sendTransaction({
-  //     //     to: ENTRY_POINT_ADDRESS,
-  //     //     value: 1000000000000000,
-  //     //     data: `0xb760faf9000000000000000000000000${smartAccountAddress.slice(2)}`,
-  //     //     gasLimit: 100000
-  //     //   })
-  //     //   .then(async (tx) => await tx.wait());
-
-  //     // setAddress(smartAccountAddress as `0x${string}`);
-  //     // setAccountAPI(wrappedProvider.smartAccountAPI);
-  //     // setBundlerClient(wrappedProvider.httpRpcClient);
-  //   }
-  // });
 
   const state = {
     client

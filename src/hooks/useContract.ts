@@ -11,6 +11,7 @@ const useContract = (contractType: ContractType) => {
 
   return useMemo(() => {
     const { address, abi } = contracts[contractType];
+
     return getContract({
       address,
       abi,
