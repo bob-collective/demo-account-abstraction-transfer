@@ -11,6 +11,4 @@ const initialState = {
 
 const accountAbstractionContext = createContext<accountAbstractionContextValue>(initialState);
 
-
-
-export {  accountAbstractionContext };
+export { accountAbstractionContext };
