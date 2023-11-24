@@ -11,7 +11,7 @@ import { ContractType, CurrencyTicker, Erc20CurrencyTicker } from './constants';
 import { useBalances } from './hooks/useBalances';
 import { isFormDisabled } from './utils/validation';
 import './utils/yup.custom';
-import { useAccountAbstraction } from './aa/context';
+import { useAccountAbstraction, BigNumberish } from './aa';
 import { encodeFunctionData } from 'viem';
 import { HexString } from './types';
 import { toAtomicAmount } from './utils/currencies';
@@ -35,8 +35,8 @@ function App() {
       if (!client) {
         return;
       }
-      console.log(form);
 
+      let approvalUserOpNonce: BigNumberish | null = null;
       // approve wbtc spending by paymaster contract
       if (client.paymasterAddress && client.smartAccountAddress) {
         const allowance = await contract.read.allowance([client.smartAccountAddress, client.paymasterAddress]);
@@ -54,8 +54,8 @@ function App() {
             value: 0
           });
           approvalUserOp.paymasterAndData = '0x';
-          const approvalResult = await client.sendUserOp(approvalUserOp);
-          console.log(approvalResult);
+          await client.signAndSendUserOp(approvalUserOp);
+          approvalUserOpNonce = await approvalUserOp.nonce;
         }
       }
 
@@ -66,9 +66,14 @@ function App() {
         functionName: 'transfer',
         args: [form.address as HexString, atomicAmount]
       });
-      const userOp = await client.createUserOp({ address: contract.address, callData, value: 0 });
+      const userOp = await client.createUserOp({
+        address: contract.address,
+        callData,
+        value: 0,
+        nonce: approvalUserOpNonce || undefined
+      });
 
-      const transferResult = await client?.sendUserOp(userOp);
+      const transferResult = await client?.signAndSendUserOp(userOp);
       console.log(transferResult);
 
       refetch();

@@ -1,7 +1,7 @@
 import { ClientConfig, ERC4337EthersProvider, HttpRpcClient, SimpleAccountAPI } from '@account-abstraction/sdk';
 import { EntryPoint__factory } from '@account-abstraction/contracts';
-import { SimpleAccountFactory__factoryClass } from './accountFactory';
-import { DeterministicDeployer } from './deployer';
+import { SimpleAccountFactory__factoryClass } from './AccountFactory';
+import { DeterministicDeployer } from './DeterministicDeployer';
 import { JsonRpcProvider } from '@ethersproject/providers';
 import { Signer } from 'ethers';
 

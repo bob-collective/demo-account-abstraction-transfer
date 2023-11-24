@@ -10,7 +10,7 @@ import './index.css';
 import '@rainbow-me/rainbowkit/styles.css';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AccountAbstractionProvider } from './aa/context';
+import { AccountAbstractionProvider } from './aa';
 import { RainbowKitProvider } from '@rainbow-me/rainbowkit';
 
 const queryClient = new QueryClient();

@@ -1,4 +1,5 @@
 import { ERC20Abi } from '../contracts/abi/ERC20.abi';
+import { EntryPointAbi } from '../contracts/abi/EntryPoint.abi';
 import { FaucetAbi } from '../contracts/abi/Faucet.abi';
 import { HexString } from '../types';
 import { Erc20Currencies, Erc20CurrencyTicker } from './currencies';
@@ -10,7 +11,8 @@ enum ContractType {
   // USDT = 'USDT',
   // ERC20_MARKETPLACE = 'ERC20_MARKETPLACE',
   // BTC_MARKETPLACE = 'BTC_MARKETPLACE',
-  FAUCET = 'FAUCET'
+  FAUCET = 'FAUCET',
+  ENTRY_POINT = 'ENTRY_POINT'
 }
 
 // Contracts config with contract address and ABI
@@ -25,6 +27,10 @@ const contracts = {
     // TODO: switch to deployed contract address
     address: '0x5451f7e2458CEa3e088c6976A7d40f443655C0A0',
     abi: FaucetAbi
+  },
+  [ContractType.ENTRY_POINT]: {
+    address: '0x7A660708DB3D56BB0dC3694344777c805716Fca7',
+    abi: EntryPointAbi
   }
 } as const;
 

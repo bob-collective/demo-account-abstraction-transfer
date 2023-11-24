@@ -1,12 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { useCallback } from 'react';
-import { useAccount, usePublicClient } from 'wagmi';
+import { usePublicClient } from 'wagmi';
 import { CurrencyTicker, Erc20Currencies, Erc20CurrencyTicker, currencies } from '../constants';
 import { REFETCH_INTERVAL } from '../constants/query';
 import { ERC20Abi } from '../contracts/abi/ERC20.abi';
 import { Amount } from '../utils/amount';
-import { useAccountAbstraction } from '../aa/context';
+import { useAccountAbstraction } from '../aa/';
 
 type Balances = {
   [ticker in Erc20CurrencyTicker]: bigint;
