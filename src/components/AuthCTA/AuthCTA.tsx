@@ -1,5 +1,4 @@
 import { CTA, CTAProps } from '@interlay/ui';
-import { useWeb3Modal } from '@web3modal/wagmi/react';
 import { useAccount } from 'wagmi';
 
 type AuthCTAProps = CTAProps;

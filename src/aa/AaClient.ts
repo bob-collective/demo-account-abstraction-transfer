@@ -2,7 +2,7 @@ import { BaseAccountAPI, HttpRpcClient } from '@account-abstraction/sdk';
 import { providers, Contract } from 'ethers';
 import { wrapProvider } from './utils';
 import { HexString } from '../types';
-import { Web3Provider } from '@ethersproject/providers';
+import { ExternalProvider, Web3Provider } from '@ethersproject/providers';
 import { ContractType, contracts } from '../constants';
 import { BigNumberish, UserOperationStruct } from './types';
 import { SimplePaymasterApi } from './SimplePaymasterApi';
@@ -27,7 +27,7 @@ class AaClient {
     if (!window.ethereum) {
       throw new Error('Injected wallet not found.');
     }
-    this._injectedProvider = new providers.Web3Provider(window.ethereum);
+    this._injectedProvider = new providers.Web3Provider(window.ethereum as unknown as ExternalProvider);
     this.paymasterAddress = opts.paymasterAddress;
 
     this._initialize(opts);
