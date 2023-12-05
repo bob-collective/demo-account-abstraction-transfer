@@ -123,7 +123,7 @@ function App() {
               <Flex direction='column' gap='spacing4'>
                 <TokenInput
                   type='selectable'
-                  label='Offer'
+                  label='Amount'
                   balance={balance?.toBig().toString()}
                   valueUSD={0}
                   selectProps={mergeProps(
