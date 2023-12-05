@@ -9,7 +9,7 @@ const AccountAbstractionProvider = ({ children }: { children: JSX.Element }) => 
     const createClient = () => {
       new AaClient({
         paymasterAddress: '0xD8Ae58534d5488571E248DdC0A3aD42aD5dBaD26',
-        bundlerUrl: 'https://bundler-fluffy-bob.gobob.xyz/rpc', // For local bundler use: 'http://localhost:3000/rpc',
+        bundlerUrl: 'http://localhost:3000/rpc',
         onInitCallback: (client) => setClient(client)
       });
     };
