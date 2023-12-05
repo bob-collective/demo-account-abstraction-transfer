@@ -42,7 +42,6 @@ function App() {
         const allowance = await contract.read.allowance([client.smartAccountAddress, client.paymasterAddress]);
 
         const uint256Max = BigInt(2 ** 256) - BigInt(1);
-        console.log(allowance, uint256Max, [client.smartAccountAddress, client.paymasterAddress])
         if (allowance < uint256Max) {
           const approvalCallData = encodeFunctionData({
             abi: contract.abi,
@@ -59,8 +58,6 @@ function App() {
           approvalUserOpNonce = await approvalUserOp.nonce;
         }
       }
-      console.log(approvalUserOpNonce?.toString(), approvalUserOpNonce && parseInt(approvalUserOpNonce.toString()))
-
       const atomicAmount = toAtomicAmount(form.amount, 'WBTC');
       // send userop
       const callData = encodeFunctionData({
