@@ -5,7 +5,6 @@ import { L2_BLOCK_EXPLORER, L2_CHAIN_ID, L2_MULTICALL3_ADDRESS, L2_RPC_URL, L2_W
 
 import { connectorsForWallets } from '@rainbow-me/rainbowkit';
 import { metaMaskWallet, rainbowWallet, walletConnectWallet } from '@rainbow-me/rainbowkit/wallets';
-import { rainbowWeb3AuthConnector } from './RainbowAuthConnectorInstance';
 
 const L2_PROJECT_ID = import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID as string;
 
@@ -56,8 +55,7 @@ const connectors = connectorsForWallets([
     wallets: [
       rainbowWallet({ projectId: L2_PROJECT_ID, chains }),
       walletConnectWallet({ projectId: L2_PROJECT_ID, chains }),
-      metaMaskWallet({ projectId: L2_PROJECT_ID, chains }),
-      rainbowWeb3AuthConnector({ chains })
+      metaMaskWallet({ projectId: L2_PROJECT_ID, chains })
     ]
   }
 ]);

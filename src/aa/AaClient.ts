@@ -98,9 +98,10 @@ class AaClient {
    * If paymaster is not used, this method will check entrypoint deposit and
    * try to deposit more funds if needed.
    */
-  protected async _preSendUserOp() {
+  protected async _preSendUserOp(userOp: UserOperationStruct) {
     this._checkInitialized();
-    if (this.paymasterAddress) {
+    console.log(userOp);
+    if (userOp.paymasterAndData !== '0x') {
       // TODO: paymasters are now handled outside of this client, decide
       // whether erc20 approval tx should be moved here for wbtc paymaster.
       return;
@@ -134,7 +135,7 @@ class AaClient {
    * @returns userOpHash the id of this operation.
    */
   public async signAndSendUserOp(userOp: UserOperationStruct) {
-    await this._preSendUserOp();
+    await this._preSendUserOp(userOp);
 
     const signedUserOp = await this.accountApi!.signUserOp(userOp);
 

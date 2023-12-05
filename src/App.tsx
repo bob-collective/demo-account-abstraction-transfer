@@ -42,6 +42,7 @@ function App() {
         const allowance = await contract.read.allowance([client.smartAccountAddress, client.paymasterAddress]);
 
         const uint256Max = BigInt(2 ** 256) - BigInt(1);
+        console.log(allowance, uint256Max, [client.smartAccountAddress, client.paymasterAddress])
         if (allowance < uint256Max) {
           const approvalCallData = encodeFunctionData({
             abi: contract.abi,
@@ -58,6 +59,7 @@ function App() {
           approvalUserOpNonce = await approvalUserOp.nonce;
         }
       }
+      console.log(approvalUserOpNonce?.toString(), approvalUserOpNonce && parseInt(approvalUserOpNonce.toString()))
 
       const atomicAmount = toAtomicAmount(form.amount, 'WBTC');
       // send userop
@@ -70,7 +72,7 @@ function App() {
         address: contract.address,
         callData,
         value: 0,
-        nonce: approvalUserOpNonce || undefined
+        nonce: approvalUserOpNonce ? parseInt(approvalUserOpNonce.toString()) + 1 : undefined
       });
 
       const transferResult = await client?.signAndSendUserOp(userOp);
@@ -114,7 +116,7 @@ function App() {
             Transfer
           </H1>
           <P align='center' style={{ padding: '1.5rem 0' }}>
-            Using smart account {client?.smartAccountAddress}
+           {client?.smartAccountAddress ? `Using smart account ${client.smartAccountAddress}`: "Please connect with Metamask."} 
           </P>
           <form onSubmit={form.handleSubmit}>
             <Flex marginTop='spacing4' direction='column' gap='spacing8'>
