@@ -25,4 +25,14 @@ const CTAWrapper = styled(Flex)`
   gap: ${theme.spacing.spacing2};
 `;
 
-export { StyledHeader, StyledMain, CTAWrapper };
+const StyledFooter = styled(Flex)`
+  padding: 0 ${theme.spacing.spacing4};
+
+  @media ${theme.breakpoints.up('md')} {
+    padding: 0 ${theme.spacing.spacing12};
+  }
+
+  min-height: 55px;
+`;
+
+export { StyledHeader, StyledMain, CTAWrapper, StyledFooter };

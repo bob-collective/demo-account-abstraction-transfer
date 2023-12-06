@@ -113,7 +113,9 @@ function App() {
             Transfer
           </H1>
           <P align='center' style={{ padding: '1.5rem 0' }}>
-           {client?.smartAccountAddress ? `Using smart account ${client.smartAccountAddress}`: "Please connect with Metamask."} 
+            {client?.smartAccountAddress
+              ? `Using smart account ${client.smartAccountAddress}`
+              : 'Please connect with Metamask.'}
           </P>
           <form onSubmit={form.handleSubmit}>
             <Flex marginTop='spacing4' direction='column' gap='spacing8'>
