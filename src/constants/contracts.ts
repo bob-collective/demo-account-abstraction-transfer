@@ -25,11 +25,11 @@ const contracts = {
   ),
   [ContractType.FAUCET]: {
     // TODO: switch to deployed contract address
-    address: '0x5451f7e2458CEa3e088c6976A7d40f443655C0A0',
+    address: '0x7884560F14c62E0a83420F17832988cC1a775df1',
     abi: FaucetAbi
   },
   [ContractType.ENTRY_POINT]: {
-    address: '0x7A660708DB3D56BB0dC3694344777c805716Fca7',
+    address: '0x8b57d6ec08e09078Db50F265729440713E024C6a',
     abi: EntryPointAbi
   }
 } as const;
