@@ -27,7 +27,7 @@ const Erc20Currencies: {
     ticker: Erc20CurrencyTicker.WBTC,
     name: 'wBTC',
     decimals: 8,
-    address: '0x28A13b11551f91651e8Da8Cd997886aA0B46CD16'
+    address: '0x2868d708e442A6a940670d26100036d426F1e16b'
   },
   [Erc20CurrencyTicker.USDT]: {
     ticker: Erc20CurrencyTicker.USDT,

@@ -41,7 +41,7 @@ class AaClient {
     const config = {
       chainId: await this._injectedProvider.getNetwork().then((network) => network.chainId),
       entryPointAddress: contracts[ContractType.ENTRY_POINT].address,
-      bundlerUrl: opts.bundlerUrl || 'https://bundler-fluffy-bob.gobob.xyz/rpc',
+      bundlerUrl: opts.bundlerUrl || 'https://bundler-sepolia.gobob.xyz/rpc',
       paymasterAPI: opts.paymasterAddress && new SimplePaymasterApi(opts.paymasterAddress) // TODO: make optional and allow other paymasters.
     };
     this._signer = this._injectedProvider.getSigner();

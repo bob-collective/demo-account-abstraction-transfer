@@ -8,8 +8,9 @@ const AccountAbstractionProvider = ({ children }: { children: JSX.Element }) => 
   useEffect(() => {
     const createClient = () => {
       new AaClient({
-        paymasterAddress: '0xD8Ae58534d5488571E248DdC0A3aD42aD5dBaD26',
-        bundlerUrl: 'https://bundler-fluffy-bob.gobob.xyz/rpc', // For local bundler use: 'http://localhost:3000/rpc',
+        paymasterAddress: '0x777FA19ea9e771018678161ABf2f1E2879D3cA6C',
+        bundlerUrl: 'https://bundler-sepolia.gobob.xyz/rpc', // For local bundler use: 'http://localhost:3000/rpc',
+        // bundlerUrl: 'http://localhost:3000/rpc', // For local bundler use: '',
         onInitCallback: (client) => setClient(client)
       });
     };

@@ -44,7 +44,7 @@ Note: *Before the first user operation can be made, the paymaster smart contract
 
 WBTC contract address: `0x28A13b11551f91651e8Da8Cd997886aA0B46CD16`
 
-Entry point contract address: `0x7A660708DB3D56BB0dC3694344777c805716Fca7`
+Entry point contract address: `0x8b57d6ec08e09078Db50F265729440713E024C6a`
 
 WBTC paymaster address:
 `0xD8Ae58534d5488571E248DdC0A3aD42aD5dBaD26`
