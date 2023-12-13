@@ -1,10 +1,10 @@
-import { Flex } from '@interlay/ui';
+import { CTALink, Flex } from '@interlay/ui';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import { useAccount } from 'wagmi';
 import { Badge } from '../Badge';
 import { Faucet } from '../Faucet';
-import { GasFaucet } from '../GasFaucet';
 import { CTAWrapper, StyledHeader } from './Layout.styles';
+import { FAUCET_URL, SUPERBRIDGE_URL } from '../../constants/links';
 
 const Header = () => {
   const { address } = useAccount();
@@ -25,7 +25,12 @@ const Header = () => {
         {address && (
           <>
             <Faucet />
-            <GasFaucet />
+            <CTALink external icon href={FAUCET_URL} size='small'>
+              ETH Faucet
+            </CTALink>
+            <CTALink external icon href={SUPERBRIDGE_URL} size='small'>
+              Superbridge
+            </CTALink>
           </>
         )}
         {/* <CTA disabled={isConnecting} size='small' onClick={() => open()}>
