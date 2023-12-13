@@ -24,9 +24,10 @@ You can either connect directly from the UI, or from Conduit:
 2. Fund your account with Sepolia ETH from the [Sepolia testnet faucet](https://faucetlink.to/sepolia).
 3. Transfer Sepolia ETH to BOB using [Superbridge](https://puff-bob-jznbxtoq7h.testnets.superbridge.app/).
 
-#### Other supported tokens
+#### WBTC
 
 1. This can be done by using the faucet button in the UI.
+2. Tokens can then be imported into MetaMask using the contract address.
 
 ### Starting the project
 
