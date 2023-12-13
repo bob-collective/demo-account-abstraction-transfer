@@ -29,6 +29,8 @@ You can either connect directly from the UI, or from Conduit:
 1. This can be done by using the faucet button in the UI.
 2. Tokens can then be imported into MetaMask using the contract address.
 
+You will need to transfer tokens to the smart contract address shown at the top of the form.
+
 ### Starting the project
 
 1. Run `pnpm run dev`
