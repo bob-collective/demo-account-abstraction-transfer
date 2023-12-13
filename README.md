@@ -22,6 +22,10 @@ In this example, we will show how WBTC can be used for gas fee payment using the
 2. Fund your account with Sepolia ETH from the [Sepolia testnet faucet](https://faucetlink.to/sepolia).
 3. Transfer Sepolia ETH to BOB using [Superbridge](https://puff-bob-jznbxtoq7h.testnets.superbridge.app/).
 
+#### Other supported tokens
+
+1. This can be done by using the faucet button in the UI.
+
 ### Starting the project
 
 1. Run `pnpm run dev`
