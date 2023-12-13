@@ -47,7 +47,7 @@ Note: _Before the first user operation can be made, the paymaster smart contract
 - WBTC contract address: `0x2868d708e442A6a940670d26100036d426F1e16b`
 - Entry point contract address: `0x8b57d6ec08e09078Db50F265729440713E024C6a`
 - WBTC paymaster address: `0x777FA19ea9e771018678161ABf2f1E2879D3cA6C`
-- Bundler (eth-infinitism): `https://bundler-fluffy-bob.gobob.xyz/rpc`
+- Bundler (eth-infinitism): `https://bundler-sepolia.gobob.xyz/rpc`
 
 ### Using account abstraction
 
