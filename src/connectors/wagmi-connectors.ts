@@ -9,8 +9,8 @@ import { metaMaskWallet, rainbowWallet, walletConnectWallet } from '@rainbow-me/
 const L2_PROJECT_ID = import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID as string;
 
 const L2_METADATA = {
-  name: 'BOB: Peer to Peer Swap',
-  description: 'BOB Peer to Peer Swap Demo',
+  name: 'BOB: Account Abstractions Transfer',
+  description: 'Account Abstractions Transfer Demo',
   url: 'https://demo.gobob.xyz',
   icons: ['https://uploads-ssl.webflow.com/64e85c2f3609488b3ed725f4/64ecae53ef4b561482f1c49f_bob1.jpg']
 };
