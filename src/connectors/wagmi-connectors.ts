@@ -30,12 +30,12 @@ const L2_CHAIN_CONFIG = {
   },
   blockExplorers: {
     default: { name: 'BobScan', url: L2_BLOCK_EXPLORER }
-  },
-  contracts: {
-    multicall3: {
-      address: L2_MULTICALL3_ADDRESS
-    }
   }
+  // contracts: {
+  //   multicall3: {
+  //     address: L2_MULTICALL3_ADDRESS
+  //   }
+  // }
 } as const satisfies Chain;
 
 // const chains = [goerli];

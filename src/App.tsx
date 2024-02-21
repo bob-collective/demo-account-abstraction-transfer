@@ -15,7 +15,7 @@ import { ContractType, CurrencyTicker, Erc20CurrencyTicker } from './constants';
 import { useContract } from './hooks/useContract';
 import { useEthersSigner } from './hooks/useEthersSigner';
 import { HexString } from './types';
-import { toAtomicAmount } from './utils/currencies';
+import { toAtomicAmount, toBaseAmount } from './utils/currencies';
 import { isFormDisabled } from './utils/validation';
 import './utils/yup.custom';
 
@@ -72,12 +72,19 @@ function App() {
       // }
 
       const atomicAmount = toAtomicAmount(form.amount, 'WBTC');
-      return contract.write.transfer([form.address as HexString, atomicAmount]);
+
+      // return contract.write.transfer([form.address as HexString, atomicAmount]);
       // send userop
+      // const callData = encodeFunctionData({
+      //   abi: contract.abi,
+      //   functionName: 'transfer',
+      //   args: [form.address as HexString, atomicAmount]
+      // });
+
       const callData = encodeFunctionData({
         abi: contract.abi,
-        functionName: 'transfer',
-        args: [form.address as HexString, atomicAmount]
+        functionName: 'mint',
+        args: [atomicAmount]
       });
       // const userOp = await client.createUserOp({
       //   address: contract.address,
@@ -90,19 +97,19 @@ function App() {
         chainId: 123420111, // Goerli in this case
         target: contract.address, // target contract address
         data: callData!, // encoded transaction datas
-        user: address
+        user: await l1Signer?.getAddress()
       };
 
-      console.log(request);
+      const sponsorApiKey = import.meta.env.VITE_GELATO_API_KEY;
 
-      const sponsorApiKey = 'QBueYcEV78J_Zs2Hi_uoxuaLeUMQ8HBnSMgrg0r1eHI_';
-      console.log(l1Signer);
       const relayResponse = await relay.sponsoredCallERC2771(
         request,
         l1Signer, // new providers.Web3Provider(provider),
         sponsorApiKey
       );
+
       const taskId = relayResponse.taskId;
+
       console.log(`https://relay.gelato.digital/tasks/status/${taskId}`);
 
       // const transferResult = await client?.signAndSendUserOp(userOp);
@@ -148,7 +155,7 @@ function App() {
                 <TokenInput
                   type='selectable'
                   label='Amount'
-                  balance={'0'}
+                  balance={toBaseAmount(data || 0n, 'WBTC')}
                   valueUSD={0}
                   selectProps={mergeProps(
                     {
