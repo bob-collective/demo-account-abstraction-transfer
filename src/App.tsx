@@ -1,21 +1,23 @@
-import { Card, Flex, H1, Input, P, TokenInput } from '@interlay/ui';
+import { Card, Flex, H1, Input, TokenInput } from '@interlay/ui';
 import { Layout } from './components';
 
+import { GelatoRelay } from '@gelatonetwork/relay-sdk';
 import { useForm } from '@interlay/hooks';
 import { mergeProps } from '@react-aria/utils';
-import { useMutation } from '@tanstack/react-query';
-import { Key, useEffect, useState } from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { Key, useState } from 'react';
+import { encodeFunctionData } from 'viem';
+import { useAccount } from 'wagmi';
 import { StyledWrapper } from './App.style';
 import { AuthCTA } from './components/AuthCTA';
+import { L2_CHAIN_ID } from './config';
 import { ContractType, CurrencyTicker, Erc20CurrencyTicker } from './constants';
-import { useBalances } from './hooks/useBalances';
+import { useContract } from './hooks/useContract';
+import { useEthersSigner } from './hooks/useEthersSigner';
+import { HexString } from './types';
+import { toAtomicAmount, toBaseAmount } from './utils/currencies';
 import { isFormDisabled } from './utils/validation';
 import './utils/yup.custom';
-import { useAccountAbstraction, BigNumberish } from './aa';
-import { encodeFunctionData } from 'viem';
-import { HexString } from './types';
-import { toAtomicAmount } from './utils/currencies';
-import { useContract } from './hooks/useContract';
 
 type TransferForm = {
   amount: string;
@@ -23,59 +25,96 @@ type TransferForm = {
   address: string;
 };
 
+const relay = new GelatoRelay({});
+
 function App() {
-  const { client } = useAccountAbstraction();
+  // const { client } = useAccountAbstraction();
+  const { address } = useAccount();
 
   const [ticker, setTicker] = useState<CurrencyTicker>(Erc20CurrencyTicker.WBTC);
-  const { balances, getBalance, refetch } = useBalances();
+  const l1Signer = useEthersSigner({ chainId: L2_CHAIN_ID });
 
   const contract = useContract(ContractType[Erc20CurrencyTicker.WBTC]);
+  const { data } = useQuery({
+    queryKey: ['wbtc-balance', address],
+    enabled: !!address,
+    queryFn: async () => {
+      if (!address) return;
+      return contract.read.balanceOf([address!]);
+    }
+  });
+
   const mutation = useMutation({
     mutationFn: async (form: TransferForm) => {
-      if (!client) {
-        return;
-      }
+      if (!address) return;
 
-      let approvalUserOpNonce: BigNumberish | null = null;
-      // approve wbtc spending by paymaster contract
-      if (client.paymasterAddress && client.smartAccountAddress) {
-        const allowance = await contract.read.allowance([client.smartAccountAddress, client.paymasterAddress]);
+      // let approvalUserOpNonce: BigNumberish | null = null;
+      // // approve wbtc spending by paymaster contract
+      // if (address && client.smartAccountAddress) {
+      //   const allowance = await contract.read.allowance([address, client.paymasterAddress]);
 
-        const uint256Max = BigInt(2 ** 256) - BigInt(1);
-        if (allowance < uint256Max) {
-          const approvalCallData = encodeFunctionData({
-            abi: contract.abi,
-            functionName: 'approve',
-            args: [client.paymasterAddress as HexString, uint256Max]
-          });
-          const approvalUserOp = await client.createUserOp({
-            address: contract.address,
-            callData: approvalCallData,
-            value: 0
-          });
-          approvalUserOp.paymasterAndData = '0x';
-          await client.signAndSendUserOp(approvalUserOp);
-          approvalUserOpNonce = await approvalUserOp.nonce;
-        }
-      }
+      //   const uint256Max = BigInt(2 ** 256) - BigInt(1);
+      //   if (allowance < uint256Max) {
+      //     const approvalCallData = encodeFunctionData({
+      //       abi: contract.abi,
+      //       functionName: 'approve',
+      //       args: [client.paymasterAddress as HexString, uint256Max]
+      //     });
+      //     const approvalUserOp = await client.createUserOp({
+      //       address: contract.address,
+      //       callData: approvalCallData,
+      //       value: 0
+      //     });
+      //     approvalUserOp.paymasterAndData = '0x';
+      //     await client.signAndSendUserOp(approvalUserOp);
+      //     approvalUserOpNonce = await approvalUserOp.nonce;
+      //   }
+      // }
+
       const atomicAmount = toAtomicAmount(form.amount, 'WBTC');
+
+      // return contract.write.transfer([form.address as HexString, atomicAmount]);
       // send userop
+      // const callData = encodeFunctionData({
+      //   abi: contract.abi,
+      //   functionName: 'transfer',
+      //   args: [form.address as HexString, atomicAmount]
+      // });
+
       const callData = encodeFunctionData({
         abi: contract.abi,
-        functionName: 'transfer',
-        args: [form.address as HexString, atomicAmount]
+        functionName: 'mint',
+        args: [atomicAmount]
       });
-      const userOp = await client.createUserOp({
-        address: contract.address,
-        callData,
-        value: 0,
-        nonce: approvalUserOpNonce ? parseInt(approvalUserOpNonce.toString()) + 1 : undefined
-      });
+      // const userOp = await client.createUserOp({
+      //   address: contract.address,
+      //   callData,
+      //   value: 0,
+      //   nonce: approvalUserOpNonce ? parseInt(approvalUserOpNonce.toString()) + 1 : undefined
+      // });
 
-      const transferResult = await client?.signAndSendUserOp(userOp);
-      console.log(transferResult);
+      const request = {
+        chainId: 123420111, // Goerli in this case
+        target: contract.address, // target contract address
+        data: callData!, // encoded transaction datas
+        user: await l1Signer?.getAddress()
+      };
 
-      refetch();
+      const sponsorApiKey = import.meta.env.VITE_GELATO_API_KEY;
+
+      const relayResponse = await relay.sponsoredCallERC2771(
+        request,
+        l1Signer, // new providers.Web3Provider(provider),
+        sponsorApiKey
+      );
+
+      const taskId = relayResponse.taskId;
+
+      console.log(`https://relay.gelato.digital/tasks/status/${taskId}`);
+
+      // const transferResult = await client?.signAndSendUserOp(userOp);
+      // console.log(transferResult);
+
       return;
     }
   });
@@ -83,8 +122,6 @@ function App() {
   const handleSubmit = (values: TransferForm) => {
     mutation.mutate(values);
   };
-
-  const balance = getBalance(ticker);
 
   const form = useForm<TransferForm>({
     initialValues: {
@@ -96,13 +133,6 @@ function App() {
     hideErrors: 'untouched'
   });
 
-  useEffect(() => {
-    if (!balances) return;
-
-    form.validateForm();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [balances]);
-
   const isSubmitDisabled = isFormDisabled(form);
 
   return (
@@ -112,30 +142,27 @@ function App() {
           <H1 align='center' size='xl'>
             Transfer
           </H1>
-          <P align='center' style={{ padding: '1.5rem 0' }}>
-            {client?.smartAccountAddress
-              ? `Using smart account ${client.smartAccountAddress}`
-              : 'Please connect with Metamask.'}
-          </P>
+          <button
+            onClick={async () => {
+              contract.write.mint([100000000000000000000000000n]);
+            }}
+          >
+            mint
+          </button>
           <form onSubmit={form.handleSubmit}>
             <Flex marginTop='spacing4' direction='column' gap='spacing8'>
               <Flex direction='column' gap='spacing4'>
                 <TokenInput
                   type='selectable'
                   label='Amount'
-                  balance={balance?.toBig().toString()}
+                  balance={toBaseAmount(data || 0n, 'WBTC')}
                   valueUSD={0}
                   selectProps={mergeProps(
                     {
                       items: [
                         {
                           value: 'WBTC',
-                          balance: getBalance(Erc20CurrencyTicker.WBTC).toBig().toNumber(),
-                          balanceUSD: 0
-                        },
-                        {
-                          value: 'USDT',
-                          balance: getBalance(Erc20CurrencyTicker.USDT).toBig().toNumber(),
+                          balance: 0,
                           balanceUSD: 0
                         }
                       ],
