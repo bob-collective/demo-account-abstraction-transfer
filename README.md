@@ -10,3 +10,7 @@ Documentation can be found at https://docs.gobob.xyz/docs/build/how-to/bridged-b
 
 1. Install [pnpm](https://pnpm.io/installation)
 2. Run `pnpm install`
+
+### Starting the project
+1. Run `pnpm run dev`
+2. Open `localhost:5173` in your browser
